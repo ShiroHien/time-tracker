@@ -1,0 +1,5 @@
+{
+  "name": "Time Tracker Desktop",
+  "description": "A desktop-style application to track time spent on various tasks. Add tasks, log hours with a simple counter, and analyze your productivity with daily, weekly, monthly, and overall charts.",
+  "requestFramePermissions": []
+}

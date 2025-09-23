@@ -1,0 +1,49 @@
+{
+  "name": "time-tracker-electron",
+  "version": "1.0.0",
+  "description": "A desktop time tracking app.",
+  "main": "main.js",
+  "scripts": {
+    "start": "vite build && electron .",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "package": "npm run build && electron-builder"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Shiro"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13"
+  },
+  "build": {
+    "appId": "com.yourcompany.timetracker",
+    "productName": "Time Tracker Desktop",
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}

@@ -20,13 +20,17 @@ const App: React.FC = () => {
 
   const addTask = (name: string) => {
     if (name.trim() === '') return;
-    const newTask: Task = { id: crypto.randomUUID(), name: name.trim() };
+    const newTask: Task = { id: crypto.randomUUID(), name: name.trim(), done: false };
     setTasks(prev => [...prev, newTask]);
   };
 
   const deleteTask = (taskId: string) => {
+    // remove the task entry but keep logs/analysis (they are preserved)
     setTasks(prev => prev.filter(task => task.id !== taskId));
-    setLogs(prev => prev.filter(log => log.taskId !== taskId));
+  };
+
+  const toggleDone = (taskId: string) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
   };
 
   const changeHours = (taskId: string, amount: 1 | -1) => {
@@ -78,6 +82,7 @@ const App: React.FC = () => {
             onAddTask={addTask}
             onDeleteTask={deleteTask}
             onChangeHours={changeHours}
+            onToggleDone={toggleDone}
           />
         ) : (
           <Analysis tasks={tasks} logs={logs} />

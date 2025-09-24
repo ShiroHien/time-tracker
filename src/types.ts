@@ -1,6 +1,8 @@
 export interface Task {
   id: string;
   name: string;
+  /** task completed/archived flag */
+  done?: boolean;
 }
 
 export interface LogEntry {

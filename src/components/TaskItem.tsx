@@ -8,12 +8,16 @@ interface TaskItemProps {
   onIncrement: () => void;
   onDecrement: () => void;
   onDelete: () => void;
+  onToggleDone?: () => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, hours, onIncrement, onDecrement, onDelete }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, hours, onIncrement, onDecrement, onDelete, onToggleDone }) => {
   return (
-    <div className="bg-gray-800 p-4 rounded-lg flex items-center justify-between shadow-md border border-gray-700 hover:border-blue-500 transition-all duration-300">
-      <span className="font-medium text-gray-200 text-lg">{task.name}</span>
+    <div className={`bg-gray-800 p-4 rounded-lg flex items-center justify-between shadow-md border border-gray-700 hover:border-blue-500 transition-all duration-300 ${task.done ? 'opacity-60' : ''}`}>
+      <div className="flex items-center gap-3">
+        <input type="checkbox" checked={!!task.done} onChange={onToggleDone} aria-label={task.done ? 'Mark as active' : 'Mark as done'} className="w-4 h-4" />
+        <span className="font-medium text-gray-200 text-lg">{task.name}</span>
+      </div>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <button onClick={onDecrement} disabled={hours <= 0} className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-white">

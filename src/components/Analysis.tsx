@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import { Task, LogEntry } from '../types';
 
 interface AnalysisProps {
@@ -34,7 +34,8 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 const Analysis: React.FC<AnalysisProps> = ({ tasks, logs }) => {
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('overall');
-  const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
+  const [chartType, setChartType] = useState<'pie'>('pie');
+  const [includeDone, setIncludeDone] = useState(true);
 
   const filteredLogs = useMemo(() => {
     const now = new Date();
@@ -50,7 +51,11 @@ const Analysis: React.FC<AnalysisProps> = ({ tasks, logs }) => {
 
   const analysisData = useMemo(() => {
     const dataMap = new Map<string, number>();
+    // optionally filter logs by whether their task is done or not
+    const validTaskIds = new Set(tasks.filter(t => includeDone ? true : !t.done).map(t => t.id));
+
     filteredLogs.forEach(log => {
+      if (!validTaskIds.has(log.taskId) && tasks.some(t => t.id === log.taskId)) return; // skip logs for done tasks when excluded
       dataMap.set(log.taskId, (dataMap.get(log.taskId) || 0) + log.hours);
     });
 
@@ -97,11 +102,15 @@ const Analysis: React.FC<AnalysisProps> = ({ tasks, logs }) => {
     <div className="flex flex-col gap-6 text-white h-full">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-100">Analysis</h1>
-        <div className="flex gap-2 p-1 bg-gray-800 rounded-lg">
+          <div className="flex gap-2 p-1 bg-gray-800 rounded-lg items-center">
             <TimeFrameButton frame="day" label="Today" />
             <TimeFrameButton frame="week" label="This Week" />
             <TimeFrameButton frame="month" label="This Month" />
             <TimeFrameButton frame="overall" label="Overall" />
+              <div className="ml-2 flex items-center gap-2">
+                <label className="text-sm text-gray-300">Include done</label>
+                <input type="checkbox" checked={includeDone} onChange={(e) => setIncludeDone(e.target.checked)} className="w-4 h-4" />
+              </div>
         </div>
       </div>
       
@@ -110,24 +119,11 @@ const Analysis: React.FC<AnalysisProps> = ({ tasks, logs }) => {
             <div className="flex justify-end items-center mb-4 gap-4">
                 <span className="text-gray-400 text-sm">Total Hours: <span className="font-bold text-lg text-blue-400">{totalHours}</span></span>
                 <div className="flex gap-1 p-1 bg-gray-700 rounded-md">
-                    <button onClick={() => setChartType('bar')} className={`px-3 py-1 text-xs rounded transition-colors ${chartType === 'bar' ? 'bg-blue-600 text-white' : 'hover:bg-gray-600'}`}>Bar</button>
                     <button onClick={() => setChartType('pie')} className={`px-3 py-1 text-xs rounded transition-colors ${chartType === 'pie' ? 'bg-blue-600 text-white' : 'hover:bg-gray-600'}`}>Pie</button>
                 </div>
             </div>
           <ResponsiveContainer width="100%" height="100%">
-            {chartType === 'bar' ? (
-                 <BarChart data={analysisData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
-                    <XAxis dataKey="name" stroke="#A0AEC0" tick={{ fontSize: 12 }} />
-                    <YAxis stroke="#A0AEC0" />
-                    <Tooltip cursor={{fill: 'rgba(128, 128, 128, 0.1)'}} contentStyle={{ backgroundColor: '#1A202C', border: '1px solid #4A5568', borderRadius: '0.5rem' }} />
-                    <Bar dataKey="hours" name="Hours" radius={[4, 4, 0, 0]}>
-                        {analysisData.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Bar>
-                </BarChart>
-            ) : (
+            {
                 <PieChart>
                     <Pie
                         data={analysisData}
@@ -147,7 +143,7 @@ const Analysis: React.FC<AnalysisProps> = ({ tasks, logs }) => {
                     <Tooltip contentStyle={{ backgroundColor: '#adb1b9ff', border: '1px solid #4A5568', borderRadius: '0.5rem' }} />
                     <Legend />
                 </PieChart>
-            )}
+            }
           </ResponsiveContainer>
         </div>
       ) : (

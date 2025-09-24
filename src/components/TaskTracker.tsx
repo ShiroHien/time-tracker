@@ -9,6 +9,7 @@ interface TaskTrackerProps {
   onAddTask: (name: string) => void;
   onDeleteTask: (taskId: string) => void;
   onChangeHours: (taskId: string, amount: 1 | -1) => void;
+  onToggleDone?: (taskId: string) => void;
 }
 
 const TaskTracker: React.FC<TaskTrackerProps> = ({
@@ -17,8 +18,10 @@ const TaskTracker: React.FC<TaskTrackerProps> = ({
   onAddTask,
   onDeleteTask,
   onChangeHours,
+  onToggleDone,
 }) => {
   const [newTaskName, setNewTaskName] = useState('');
+  const [tab, setTab] = useState<'active' | 'done'>('active');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,9 +51,14 @@ const TaskTracker: React.FC<TaskTrackerProps> = ({
         </button>
       </form>
 
+      <div className="flex items-center gap-2">
+        <button className={`px-3 py-1 rounded ${tab === 'active' ? 'bg-blue-600' : 'bg-gray-700'}`} onClick={() => setTab('active')}>Active</button>
+        <button className={`px-3 py-1 rounded ${tab === 'done' ? 'bg-blue-600' : 'bg-gray-700'}`} onClick={() => setTab('done')}>Done</button>
+      </div>
+
       <div className="flex flex-col gap-3">
-        {tasks.length > 0 ? (
-          tasks.map(task => (
+        {tasks.filter(t => (tab === 'active' ? !t.done : t.done)).length > 0 ? (
+          tasks.filter(t => (tab === 'active' ? !t.done : t.done)).map(task => (
             <TaskItem
               key={task.id}
               task={task}
@@ -58,12 +66,13 @@ const TaskTracker: React.FC<TaskTrackerProps> = ({
               onDelete={() => onDeleteTask(task.id)}
               onIncrement={() => onChangeHours(task.id, 1)}
               onDecrement={() => onChangeHours(task.id, -1)}
+              onToggleDone={() => onToggleDone && onToggleDone(task.id)}
             />
           ))
         ) : (
           <div className="text-center text-gray-500 py-10 border-2 border-dashed border-gray-700 rounded-lg">
-            <p className="text-lg">No tasks yet.</p>
-            <p>Add one to get started tracking your time!</p>
+            <p className="text-lg">No tasks.</p>
+            <p>{tab === 'active' ? 'Add one to get started tracking your time!' : 'No completed tasks yet.'}</p>
           </div>
         )}
       </div>

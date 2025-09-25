@@ -10,6 +10,8 @@ interface TaskTrackerProps {
   onDeleteTask: (taskId: string) => void;
   onChangeHours: (taskId: string, amount: 1 | -1) => void;
   onToggleDone?: (taskId: string) => void;
+  onRename?: (taskId: string, newName: string) => void;
+  onReorder?: (fromIndex: number, toIndex: number) => void;
 }
 
 const TaskTracker: React.FC<TaskTrackerProps> = ({
@@ -19,6 +21,8 @@ const TaskTracker: React.FC<TaskTrackerProps> = ({
   onDeleteTask,
   onChangeHours,
   onToggleDone,
+  onRename,
+  onReorder,
 }) => {
   const [newTaskName, setNewTaskName] = useState('');
   const [tab, setTab] = useState<'active' | 'done'>('active');
@@ -27,6 +31,32 @@ const TaskTracker: React.FC<TaskTrackerProps> = ({
     e.preventDefault();
     onAddTask(newTaskName);
     setNewTaskName('');
+  };
+
+  // drag state
+  const dragItem = React.useRef<string | null>(null);
+  const dragOverItem = React.useRef<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    dragItem.current = id;
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    dragOverItem.current = id;
+  };
+
+  const handleDrop = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    const fromId = dragItem.current;
+    const toId = id;
+    if (!fromId || !toId || fromId === toId) return;
+    const fromIndex = tasks.findIndex(t => t.id === fromId);
+    const toIndex = tasks.findIndex(t => t.id === toId);
+    if (fromIndex >= 0 && toIndex >= 0 && onReorder) onReorder(fromIndex, toIndex);
+    dragItem.current = null;
+    dragOverItem.current = null;
   };
 
   return (
@@ -67,6 +97,11 @@ const TaskTracker: React.FC<TaskTrackerProps> = ({
               onIncrement={() => onChangeHours(task.id, 1)}
               onDecrement={() => onChangeHours(task.id, -1)}
               onToggleDone={() => onToggleDone && onToggleDone(task.id)}
+              onRename={(id, newName) => onRename && onRename(id, newName)}
+              draggable
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
             />
           ))
         ) : (

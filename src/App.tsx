@@ -33,6 +33,19 @@ const App: React.FC = () => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
   };
 
+  const renameTask = (taskId: string, newName: string) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, name: newName } : t));
+  };
+
+  const reorderTasks = (fromIndex: number, toIndex: number) => {
+    setTasks(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  };
+
   const changeHours = (taskId: string, amount: 1 | -1) => {
     const currentHours = taskHours.get(taskId) || 0;
     if (currentHours + amount < 0) return;
@@ -83,6 +96,8 @@ const App: React.FC = () => {
             onDeleteTask={deleteTask}
             onChangeHours={changeHours}
             onToggleDone={toggleDone}
+            onRename={renameTask}
+            onReorder={reorderTasks}
           />
         ) : (
           <Analysis tasks={tasks} logs={logs} />
